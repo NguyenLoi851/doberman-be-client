@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'doberman-db'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'user-pw'
+      MYSQL_ROOT_PASSWORD: 'root-pw'
+    ports:
+      - '3306:3306'
+    volumes:
+      - ./dump/db:/var/lib/mysql
+      
