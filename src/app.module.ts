@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { User } from './users/entities/users.entity';
-import { UsersModule } from './users/users.module';
+import { RolesGuard } from './guards/roles.guard';
+import { User } from './user/entities/user.entity';
+import { UsersModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -20,6 +22,9 @@ import { UsersModule } from './users/users.module';
     UsersModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, {
+    provide: APP_GUARD,
+    useClass: RolesGuard,
+  },],
 })
 export class AppModule {}

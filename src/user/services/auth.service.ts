@@ -2,8 +2,8 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { ExtractJwt } from 'passport-jwt';
-import { UserSignDTO } from '../dtos/users.dto';
-import { UsersService } from './users.service';
+import { UserSignDTO } from '../dtos/user.dto';
+import { UsersService } from './user.service';
 import fromAuthHeaderWithScheme = ExtractJwt.fromAuthHeaderWithScheme;
 
 @Injectable()
