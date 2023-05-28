@@ -8,7 +8,7 @@ export class SignAllowMintUIDDTO {
         required: true,
         example: '0x0000000000000000000000000000000000000000'
     })
-    address: string;
+    userAddr: string;
 
     @IsNumber()
     @IsNotEmpty()

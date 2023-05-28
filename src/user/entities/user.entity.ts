@@ -10,5 +10,5 @@ export class User {
     address: string
 
     @Column()
-    roles: Role[]
+    role: Role
 }

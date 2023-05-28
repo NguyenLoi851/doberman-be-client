@@ -5,11 +5,14 @@ import { UserSignDTO } from "../dtos/user.dto";
 import { User } from "../entities/user.entity";
 import { ethers } from 'ethers';
 import { ConfigService } from "@nestjs/config";
+import { Role } from "src/enums/role.enum";
+import { UserRepository } from "../repositories/user.repository";
 
 @Injectable()
 export class UsersService {
     constructor(
-        @InjectRepository(User) private userRepository: Repository<User>,
+        // @InjectRepository(User) private userRepository: Repository<User>,
+        private userRepository: UserRepository,
         private configService: ConfigService,
     ) { }
 
@@ -32,7 +35,7 @@ export class UsersService {
         // upsert user into db
         try {
             await this.userRepository.upsert(
-                [{ address: recoverAddress.toLowerCase() }],
+                [{ address: recoverAddress.toLowerCase(), role: Role.User }],
                 ['address']
             )
             const user = await this.findByAddress(recoverAddress.toLowerCase())
