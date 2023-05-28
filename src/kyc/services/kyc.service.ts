@@ -25,7 +25,19 @@ export class KycService {
             signAllowMintUID.nonce,
             signAllowMintUID.chainId
         );
-        return signature;
+
+        await this.kycRepository.upsert(
+            [{address: signAllowMintUID.userAddr, mintSignature: signature}],
+            ['address']
+        )
+        const user = await this.findByAddress(signAllowMintUID.userAddr)
+        return user
+    }
+
+    async findByAddress(address: string) {
+        return await this.kycRepository.findOne({where:{
+            address: address
+        }})
     }
 
     private async buildMintSignature(
@@ -44,6 +56,12 @@ export class KycService {
             )
         )
 
-        return await signer.signMessage(ethers.toUtf8Bytes(msgHash))
+        return await signer.signMessage(ethers.getBytes(msgHash))
+    }
+
+    async getInfo(address: string) {
+        const userInfo =  this.findByAddress(address);
+
+        return userInfo
     }
 }

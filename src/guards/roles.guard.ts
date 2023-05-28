@@ -26,9 +26,7 @@ export class RolesGuard implements CanActivate {
     const token = bearerToken.split(' ')[1]
     const payload: any = this.jwtService.decode(token)
     const address = payload.address
-    console.log(address)
     const user = await this.userService.findByAddress(address);
-    console.log(user);
     return requiredRoles.some((role) => user.role?.includes(role));
   }
 }

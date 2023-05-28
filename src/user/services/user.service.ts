@@ -34,11 +34,12 @@ export class UsersService {
 
         // upsert user into db
         try {
-            await this.userRepository.upsert(
-                [{ address: recoverAddress.toLowerCase(), role: Role.User }],
-                ['address']
-            )
-            const user = await this.findByAddress(recoverAddress.toLowerCase())
+            let user = await this.findByAddress(recoverAddress.toLowerCase())
+            if(!user) {
+                await this.userRepository.insert({address: recoverAddress.toLowerCase(), role: Role.User})
+            }
+            user = await this.findByAddress(recoverAddress.toLowerCase())
+
             return user;
         } catch (error) {
             console.log('error at verifySignature', error);
