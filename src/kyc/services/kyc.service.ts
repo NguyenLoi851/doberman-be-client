@@ -27,7 +27,7 @@ export class KycService {
         );
 
         await this.kycRepository.upsert(
-            [{address: signAllowMintUID.userAddr, mintSignature: signature}],
+            [{address: signAllowMintUID.userAddr.toLowerCase(), mintSignature: signature}],
             ['address']
         )
         const user = await this.findByAddress(signAllowMintUID.userAddr)
@@ -36,7 +36,7 @@ export class KycService {
 
     async findByAddress(address: string) {
         return await this.kycRepository.findOne({where:{
-            address: address
+            address: address.toLowerCase()
         }})
     }
 

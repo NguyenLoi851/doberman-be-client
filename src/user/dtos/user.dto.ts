@@ -1,8 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsEnum, IsInt, IsLowercase, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class UserSignDTO {
     @IsString()
+    @IsLowercase()
     @IsNotEmpty()
     @ApiProperty({
       required: true,

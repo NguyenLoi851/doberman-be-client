@@ -49,7 +49,7 @@ export class UsersService {
 
     async findByAddress(address: string) {
         return await this.userRepository.findOne({where:{
-            address: address
+            address: address.toLowerCase()
         }})
     }
 }

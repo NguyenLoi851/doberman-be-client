@@ -1,8 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsLowercase, IsNotEmpty, IsNumber, IsString } from "class-validator";
 
 export class SignAllowMintUIDDTO {
     @IsString()
+    @IsLowercase()
     @IsNotEmpty()
     @ApiProperty({
         required: true,
