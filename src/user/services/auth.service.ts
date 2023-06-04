@@ -23,6 +23,15 @@ export class AuthService {
     };
   }
 
+  async adminSignIn(userSignDTO: UserSignDTO) {
+    const user = await this.userService.verifyAdminSignature(userSignDTO);
+    const token = await this._createToken(user);
+    return {
+      address: user.address,
+      ...token,
+    };
+  }
+
   async validateUser(address: string) {
     const user = await this.userService.findByAddress(address);
     if (!user) {

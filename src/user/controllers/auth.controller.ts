@@ -7,7 +7,7 @@ import { AuthService } from '../services/auth.service';
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('/signin')
   @ApiOperation({ summary: `Sign in API` })
@@ -15,4 +15,9 @@ export class AuthController {
     return await this.authService.signIn(userSignDTO);
   }
 
+  @Post('/admin-signin')
+  @ApiOperation({ summary: `Sign in API` })
+  async adminSignIn(@Body() userSignDTO: UserSignDTO) {
+    return await this.authService.adminSignIn(userSignDTO);
+  }
 }

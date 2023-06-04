@@ -47,6 +47,36 @@ export class UsersService {
         }
     }
 
+    async verifyAdminSignature(userSignDTO: UserSignDTO) {
+        // // validate timestamp
+        // const currentTime = Math.round(Date.now()/1000)
+        // if(currentTime - userSignDTO.timestamp > this.configService.get('SIG_EXPIRES_IN')) {
+        //     throw new HttpException('sign.time.invalid', HttpStatus.BAD_REQUEST)
+        // }
+
+        // verify message
+        const recoverAddress = ethers.verifyMessage(
+            `${this.configService.get<string>('APP_ID', 'doberman')}#${userSignDTO.timestamp}#${userSignDTO.chainId}`,
+            userSignDTO.sign,
+        );
+        if (recoverAddress.toLowerCase() != userSignDTO.address.toLowerCase()) {
+            throw new HttpException('sign.invalid', HttpStatus.BAD_REQUEST)
+        }
+
+        // upsert user into db
+        try {
+            let user = await this.findByAddress(recoverAddress.toLowerCase())
+            if(!user || user.role != Role.Admin) {
+                throw new HttpException('Not system\'s admin', HttpStatus.FORBIDDEN);
+            }
+
+            return user;
+        } catch (error) {
+            console.log('error at verifyAdminSignature', error);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     async findByAddress(address: string) {
         return await this.userRepository.findOne({where:{
             address: address.toLowerCase()

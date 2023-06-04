@@ -9,6 +9,8 @@ import { AppService } from './app.service';
 import { RolesGuard } from './guards/roles.guard';
 import { KYC } from './kyc/entities/kyc.entity';
 import { KycModule } from './kyc/kyc.module';
+import { Loan } from './loan/entities/loan.entity';
+import { LoanModule } from './loan/loan.module';
 import { Proxy } from './proxy/entities/proxy.entity';
 import { ProxyModule } from './proxy/proxy.module';
 import { User } from './user/entities/user.entity';
@@ -25,12 +27,13 @@ import { UsersModule } from './user/user.module';
       username: 'root',
       password: 'root-pw',
       database: 'doberman-db',
-      entities: [User, KYC, Proxy],
+      entities: [User, KYC, Proxy, Loan],
       synchronize: true
     }),
     UsersModule,
     KycModule,
     ProxyModule,
+    LoanModule,
   ],
   controllers: [AppController],
   providers: [

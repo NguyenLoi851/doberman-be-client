@@ -7,9 +7,6 @@ export class Loan {
     id: number
 
     @Column()
-    borrower: string
-
-    @Column()
     companyName: string
 
     @Column()
@@ -37,11 +34,20 @@ export class Loan {
     interestRate: number
 
     @Column()
-    interestPaymentFrequency: Frequency
+    interestPaymentFrequency: Frequency // months (production), minutes (develop)
 
     @Column()
     loanTerm: number // months (production), minutes (develop)
 
     @Column()
     fundableAt: number
+
+    @Column()
+    ownerAddress: string
+
+    @Column({default: false})
+    deployed: Boolean
+
+    @Column({nullable: true})
+    txHash: string
 }
