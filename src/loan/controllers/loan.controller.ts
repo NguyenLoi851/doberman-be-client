@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Put, Query, Req, UseGuards } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Roles } from "src/decorators/roles.decorator";
@@ -21,7 +21,7 @@ export class LoanController {
     @ApiBearerAuth()
     @UseGuards(AuthGuard())
     @Post('update/:id')
-    async updateLoanId(@Req() req:any,  @Param('id') id: number, @Body() updateLoanDTO: UpdateLoanDTO) {
+    async updateLoanById(@Req() req:any,  @Param('id') id: number, @Body() updateLoanDTO: UpdateLoanDTO) {
         return await this.loanService.updateLoanById(req.user, id, updateLoanDTO);
     }
 
@@ -60,14 +60,20 @@ export class LoanController {
         return await this.loanService.getUndeployedLoansByOwnerAddress(address)
     }
 
-    @Get(':id')
-    async getLoanById(@Param('id') id: number) {
-        return await this.loanService.getLoanById(id)
-    }
+    // @Get(':id')
+    // async getLoanById(@Param('id') id: number) {
+    //     return await this.loanService.getLoanById(id)
+    // }
 
-    @Get(':address')
-    async getLoansByOwnerAddress(@Param('address') address: string) {
-        return await this.loanService.getLoansByOwnerAddress(address)
+    // @Get(':address')
+    // async getLoansByOwnerAddress(@Param('address') address: string) {
+    //     return await this.loanService.getLoansByOwnerAddress(address)
+    // }
+
+    @Get('getLoanByFilter')
+    async getLoanByFilter(@Query() params: any) {
+        if(params.id) return await this.loanService.getLoanById(params.id);
+        else return await this.loanService.getLoansByOwnerAddress(params.address);
     }
 
     @Get('')

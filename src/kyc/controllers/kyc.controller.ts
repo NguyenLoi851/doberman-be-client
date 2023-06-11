@@ -3,7 +3,7 @@ import { AuthGuard } from "@nestjs/passport";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Roles } from "src/decorators/roles.decorator";
 import { Role } from "src/enums/role.enum";
-import { SignAllowMintUIDDTO } from "../dtos/kyc.dto";
+import { InsertMintUIDSignatureDTO, RequestMintUIDSignatureDTO, SignAllowMintUIDDTO } from "../dtos/kyc.dto";
 import { KycService } from "../services/kyc.service";
 
 @ApiTags('Kyc')
@@ -18,8 +18,31 @@ export class KycController {
         return this.kycService.signAllowMintUID(signAllowMintUID)
     }
 
+    @Roles(Role.Admin)
+    @Post('insertMintUIDSignature')
+    async insertMintUIDSignature(@Body() insertMintUIDSignatureDTO: InsertMintUIDSignatureDTO) {
+        return await this.kycService.insertMintUIDSignature(insertMintUIDSignatureDTO)
+    }
+
     @Get('info')
     async getInfo(@Req() req: any){
         return this.kycService.getInfo(req.user.address);
+    }
+
+    @Post('requestMintUIDSignature')
+    async requestMintUIDSignature(@Req() req: any) {
+        return await this.kycService.requestMintUIDSignature(req.user)
+    }
+
+    @Roles(Role.Admin)
+    @Get('register-users')
+    async getRegisterUsers(){
+        return await this.kycService.getRegisterUsers()
+    }
+
+    @Roles(Role.Admin)
+    @Get('accepted-kyc-users')
+    async getAcceptedKYCUsers(){
+        return await this.kycService.getAcceptedKYCUsers()
     }
 }

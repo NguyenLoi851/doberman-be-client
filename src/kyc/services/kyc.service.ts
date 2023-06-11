@@ -2,8 +2,9 @@ import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
 import { BigNumberish, ethers, Signer } from "ethers";
-import { Repository } from "typeorm";
-import { SignAllowMintUIDDTO } from "../dtos/kyc.dto";
+import { User } from "src/user/entities/user.entity";
+import { Repository, IsNull, Not } from "typeorm";
+import { InsertMintUIDSignatureDTO, RequestMintUIDSignatureDTO, SignAllowMintUIDDTO } from "../dtos/kyc.dto";
 import { KYC } from "../entities/kyc.entity";
 
 @Injectable()
@@ -32,6 +33,13 @@ export class KycService {
         )
         const user = await this.findByAddress(signAllowMintUID.userAddr)
         return user
+    }
+
+    async insertMintUIDSignature(insertMintUIDSignatureDTO: InsertMintUIDSignatureDTO) {
+        await this.kycRepository.upsert(
+            [{address: insertMintUIDSignatureDTO.userAddr.toLowerCase(), mintSignature: insertMintUIDSignatureDTO.mintSignature}],
+            ['address']
+        )
     }
 
     async findByAddress(address: string) {
@@ -63,5 +71,29 @@ export class KycService {
         const userInfo =  this.findByAddress(address);
 
         return userInfo
+    }
+
+    async requestMintUIDSignature(user: User) {
+        const entity = await this.findByAddress(user.address.toLowerCase())
+        if(!entity) {
+            const newEntity = this.kycRepository.create({address: user.address.toLowerCase()})
+            await this.kycRepository.save(newEntity)
+        }
+    }
+
+    async getRegisterUsers(){
+        return await this.kycRepository.find({
+            where: {
+                mintSignature: IsNull()
+            }
+        })
+    }
+
+    async getAcceptedKYCUsers() {
+        return await this.kycRepository.find({
+            where: {
+                mintSignature: Not(IsNull())
+            }
+        })
     }
 }

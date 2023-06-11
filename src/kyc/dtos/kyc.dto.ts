@@ -51,3 +51,33 @@ export class SignAllowMintUIDDTO {
     })
     chainId: number;
 }
+
+export class RequestMintUIDSignatureDTO {
+  @IsString()
+  @IsLowercase()
+  @IsNotEmpty()
+  @ApiProperty({
+      required: true,
+      example: '0x0000000000000000000000000000000000000000'
+  })
+  userAddr: string;
+}
+
+export class InsertMintUIDSignatureDTO {
+  @IsString()
+  @IsLowercase()
+  @IsNotEmpty()
+  @ApiProperty({
+      required: true,
+      example: '0x0000000000000000000000000000000000000000'
+  })
+  userAddr: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+      required: true,
+      example: '0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
+  })
+  mintSignature: string;
+}

@@ -8,6 +8,6 @@ export class KYC {
     @Column({unique: true})
     address: string
 
-    @Column()
+    @Column({nullable: true})
     mintSignature: string
 }
