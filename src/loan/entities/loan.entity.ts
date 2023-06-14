@@ -1,7 +1,7 @@
 import { Frequency } from "src/enums/frequency.enum";
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
-@Entity({name: 'loans'})
+@Entity({ name: 'loans' })
 export class Loan {
     @PrimaryGeneratedColumn()
     id: number
@@ -9,9 +9,9 @@ export class Loan {
     @Column()
     companyName: string
 
-    @Column()
+    @Column('longtext')
     companyIntro: string
-    
+
     @Column()
     companyPage: string
 
@@ -21,7 +21,7 @@ export class Loan {
     @Column()
     projectName: string
 
-    @Column()
+    @Column('longtext')
     projectIntro: string
 
     @Column()
@@ -45,9 +45,9 @@ export class Loan {
     @Column()
     ownerAddress: string
 
-    @Column({default: false})
+    @Column({ default: false })
     deployed: Boolean
 
-    @Column({nullable: true})
+    @Column({ nullable: true })
     txHash: string
 }

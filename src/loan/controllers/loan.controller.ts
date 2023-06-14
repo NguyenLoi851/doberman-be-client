@@ -9,26 +9,26 @@ import { LoanService } from "../services/loan.service";
 @ApiTags('Loans')
 @Controller('loans')
 export class LoanController {
-    constructor(private loanService: LoanService) {}
+    constructor(private loanService: LoanService) { }
 
     @ApiBearerAuth()
     @UseGuards(AuthGuard())
     @Post('apply')
-    async applyNewLoan(@Req() req: any, @Body() applyNewLoanDTO: ApplyNewLoanDTO){
+    async applyNewLoan(@Req() req: any, @Body() applyNewLoanDTO: ApplyNewLoanDTO) {
         return await this.loanService.applyNewLoan(req.user, applyNewLoanDTO);
     }
 
     @ApiBearerAuth()
     @UseGuards(AuthGuard())
     @Post('update/:id')
-    async updateLoanById(@Req() req:any,  @Param('id') id: number, @Body() updateLoanDTO: UpdateLoanDTO) {
+    async updateLoanById(@Req() req: any, @Param('id') id: number, @Body() updateLoanDTO: UpdateLoanDTO) {
         return await this.loanService.updateLoanById(req.user, id, updateLoanDTO);
     }
 
     @ApiBearerAuth()
     @UseGuards(AuthGuard())
     @Post('delete/:id')
-    async deleteLoanById(@Req() req:any,  @Param('id') id: number) {
+    async deleteLoanById(@Req() req: any, @Param('id') id: number) {
         return await this.loanService.deleteLoanById(req.user, id);
     }
 
@@ -41,7 +41,7 @@ export class LoanController {
     }
 
     @Get('deployed')
-    async getDeployedLoans(){
+    async getDeployedLoans() {
         return await this.loanService.getDeployedLoans()
     }
 
@@ -51,7 +51,7 @@ export class LoanController {
     }
 
     @Get('undeployed')
-    async getUndeployedLoans(){
+    async getUndeployedLoans() {
         return await this.loanService.getUndeployedLoans();
     }
 
@@ -72,8 +72,9 @@ export class LoanController {
 
     @Get('getLoanByFilter')
     async getLoanByFilter(@Query() params: any) {
-        if(params.id) return await this.loanService.getLoanById(params.id);
-        else return await this.loanService.getLoansByOwnerAddress(params.address);
+        if (params.id) return await this.loanService.getLoanById(params.id);
+        if (params.address) return await this.loanService.getLoansByOwnerAddress(params.address);
+        if (params.txHash) return await this.loanService.getLoanByTxHash(params.txHash);
     }
 
     @Get('')

@@ -65,6 +65,15 @@ export class LoanService {
         }
     }
 
+    async getLoanByTxHash(txHash: string) {
+        let loan = await this.loanRepository.findOne({
+            where: {
+                txHash: txHash
+            }
+        })
+        return loan
+    }
+
     async getAllLoans() {
         let loans = await this.loanRepository.find();
         return {
@@ -74,10 +83,10 @@ export class LoanService {
 
     async updateDeployStatus(loanId: number, deployLoanDTO: DeployLoanDTO) {
         const loan = await this.getLoanById(loanId);
-        if(loan.deployed) {
+        if (loan.deployed) {
             throw new HttpException('Already deployed', HttpStatus.BAD_REQUEST);
         }
-        await this.loanRepository.update(loanId, {...loan, deployed: true, txHash: deployLoanDTO.txHash})
+        await this.loanRepository.update(loanId, { ...loan, deployed: true, txHash: deployLoanDTO.txHash })
     }
 
     async getDeployedLoansByOwnerAddress(ownerAddress: string) {
