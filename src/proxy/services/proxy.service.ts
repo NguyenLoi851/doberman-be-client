@@ -16,7 +16,7 @@ export class ProxyService {
 
     async linkProxy(linkProxyDTO: LinkProxyDTO): Promise<string> {
         const tokensQuery = `query BorrowerPage($userId: String!){
-            borrowerContracts(where: {user: $userId}) {
+            borrowerContracts(where: {user: $userId}, orderBy: createdAt, orderDirection: desc) {
               id
             }
         }`
@@ -33,7 +33,7 @@ export class ProxyService {
             },
         })
 
-        if(res.data == null || res.data.borrowerContracts.length == 0) {
+        if (res.data == null || res.data.borrowerContracts.length == 0) {
             throw new HttpException('Not exist borrower contract', HttpStatus.BAD_REQUEST)
         }
 
@@ -55,9 +55,12 @@ export class ProxyService {
                 userAddress: ownerAddress.toLowerCase()
             }
         })
+        // if (!proxyEntity) {
+        //     const proxy = await this.linkProxy({userAddress: ownerAddress})
+        //     return proxy
+        // }
         if (!proxyEntity) {
-            const proxy = await this.linkProxy({userAddress: ownerAddress})
-            return proxy
+            throw new HttpException('Not exist borrower proxy contract', HttpStatus.BAD_REQUEST)
         }
 
         return proxyEntity.borrowerProxy
