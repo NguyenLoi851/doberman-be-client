@@ -50,4 +50,7 @@ export class Loan {
 
     @Column({ nullable: true })
     txHash: string
+
+    @Column({ nullable: true })
+    fileKey: string
 }
