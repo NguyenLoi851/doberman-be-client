@@ -6,25 +6,34 @@ import { Upload } from "@aws-sdk/lib-storage";
 import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3, S3Client } from "@aws-sdk/client-s3";
 import { v4 as uuid } from 'uuid';
 import { ConfigService } from "@nestjs/config";
+import { LegalDocumentRepository } from "../repositories/legalDocument.repository";
+import { LegalDocument } from "../entities/legalDocument.entity";
 
 @Injectable()
 export class LoanService {
     constructor(
         private loanRepository: LoanRepository,
+        private legalDocumentRepository: LegalDocumentRepository,
         private configService: ConfigService,
     ) { }
 
-    async applyNewLoan(user: User, applyNewLoanDTO: ApplyNewLoanDTO, fileKey: string) {
+    async applyNewLoan(user: User, applyNewLoanDTO: ApplyNewLoanDTO, fileKeys: string[]) {
         try {
-            const newLoan = this.loanRepository.create({ ...applyNewLoanDTO, ownerAddress: user.address, deployed: false, fileKey })
+            let documents: any[] = []
+            for (const idx in fileKeys) {
+                const document = this.legalDocumentRepository.create({ fileKey: fileKeys[idx] })
+                await this.legalDocumentRepository.save(document)
+                documents.push(document)
+            }
+            const newLoan = this.loanRepository.create({ ...applyNewLoanDTO, ownerAddress: user.address, deployed: false, legalDocuments: documents })
             await this.loanRepository.save(newLoan)
         } catch (error) {
             throw new HttpException('Server error', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    async updateLoanById(user: User, loanId: number, updateLoanDTO: UpdateLoanDTO, fileKey: string) {
-        let loan = await this.loanRepository.findOneBy({ id: loanId })
+    async updateLoanById(user: User, loanId: number, updateLoanDTO: UpdateLoanDTO, fileKeys: string[]) {
+        let loan = await this.loanRepository.findOne({ where: { id: loanId }, relations: { legalDocuments: true } })
         if (!loan) {
             throw new HttpException('Loan is not exist', HttpStatus.BAD_REQUEST)
         }
@@ -34,9 +43,25 @@ export class LoanService {
         if (loan.deployed) {
             throw new HttpException('Not allow to update after deployed', HttpStatus.BAD_REQUEST)
         }
-        if (fileKey != '') {
-            await this.loanRepository.update(loanId, { ...updateLoanDTO, fileKey })
-        } else {
+
+        if (fileKeys.length > 0) {
+            for (const idx in fileKeys) {
+                const document = this.legalDocumentRepository.create({ fileKey: fileKeys[idx] })
+                document.loan = loan
+                await this.legalDocumentRepository.save(document)
+            }
+        }
+
+        if ((updateLoanDTO as any).oldFileKeyMerge) {
+            const oldFileKeyMerge: string = (updateLoanDTO as any).oldFileKeyMerge
+            const deleteFiles = loan.legalDocuments.filter(item => !oldFileKeyMerge.includes(item.fileKey))
+            for (const idx in deleteFiles) {
+                console.log(deleteFiles[idx].fileKey)
+                await this.legalDocumentRepository.delete({ fileKey: deleteFiles[idx].fileKey })
+            }
+            delete (updateLoanDTO as any).oldFileKeyMerge
+        }
+        if (Object.keys(updateLoanDTO).length > 0) {
             await this.loanRepository.update(loanId, { ...updateLoanDTO })
         }
     }
@@ -56,7 +81,7 @@ export class LoanService {
     }
 
     async getLoanById(loanId: number) {
-        let loan = await this.loanRepository.findOneBy({ id: loanId })
+        let loan = await this.loanRepository.findOne({ where: { id: loanId }, relations: { legalDocuments: true } })
         if (!loan) {
             throw new HttpException('Loan is not exist', HttpStatus.BAD_REQUEST)
         }
@@ -67,6 +92,9 @@ export class LoanService {
         let loans = await this.loanRepository.find({
             where: {
                 ownerAddress: ownerAddress
+            },
+            relations: {
+                legalDocuments: true,
             }
         })
         return {
@@ -78,20 +106,31 @@ export class LoanService {
         let loan = await this.loanRepository.findOne({
             where: {
                 txHash: txHash
+            },
+            relations: {
+                legalDocuments: true
             }
         })
         return loan
     }
 
     async getAllLoans() {
-        let loans = await this.loanRepository.find();
+        let loans = await this.loanRepository.find({ relations: { legalDocuments: true } });
         return {
             loans: loans
         }
     }
 
+    async getLoanByIdWithoutRelations(loanId: number) {
+        let loan = await this.loanRepository.findOne({ where: { id: loanId } })
+        if (!loan) {
+            throw new HttpException('Loan is not exist', HttpStatus.BAD_REQUEST)
+        }
+        return loan;
+    }
+
     async updateDeployStatus(loanId: number, deployLoanDTO: DeployLoanDTO) {
-        const loan = await this.getLoanById(loanId);
+        const loan = await this.getLoanByIdWithoutRelations(loanId);
         if (loan.deployed) {
             throw new HttpException('Already deployed', HttpStatus.BAD_REQUEST);
         }
@@ -103,6 +142,9 @@ export class LoanService {
             where: {
                 ownerAddress: ownerAddress,
                 deployed: true
+            },
+            relations: {
+                legalDocuments: true
             }
         })
 
@@ -115,6 +157,9 @@ export class LoanService {
         let loans = await this.loanRepository.find({
             where: {
                 deployed: true
+            },
+            relations: {
+                legalDocuments: true
             }
         })
         return {
@@ -127,6 +172,9 @@ export class LoanService {
             where: {
                 ownerAddress: ownerAddress,
                 deployed: false
+            },
+            relations: {
+                legalDocuments: true
             }
         })
         return {
@@ -138,6 +186,9 @@ export class LoanService {
         let loans = await this.loanRepository.find({
             where: {
                 deployed: false
+            },
+            relations: {
+                legalDocuments: true
             }
         })
         return {
@@ -167,8 +218,16 @@ export class LoanService {
 
     async deleteFileById(loanId: number) {
         const loan = await this.getLoanById(loanId);
-        const oldFileKey = loan.fileKey
-        await this.deleteFile(oldFileKey)
+        console.log("loan", loan);
+        let oldFileKeys = []
+        if (loan.legalDocuments && loan.legalDocuments.length > 0) {
+            oldFileKeys = loan.legalDocuments.map(async (item: LegalDocument) => {
+                await this.legalDocumentRepository.delete({ fileKey: item.fileKey })
+                await this.deleteFile(item.fileKey)
+                return item.fileKey
+            })
+            await Promise.all(oldFileKeys)
+        }
     }
 
     async deleteFile(fileKey: string) {

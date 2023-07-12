@@ -193,6 +193,10 @@ export class UpdateLoanDTO {
         example: 1700000000,
     })
     fundableAt: number;
+
+    @IsString()
+    @IsOptional()
+    oldFileKeyMerge: string;
 }
 
 export class DeployLoanDTO {

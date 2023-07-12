@@ -1,5 +1,6 @@
 import { Frequency } from "src/enums/frequency.enum";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { LegalDocument } from "./legalDocument.entity";
 
 @Entity({ name: 'loans' })
 export class Loan {
@@ -51,6 +52,6 @@ export class Loan {
     @Column({ nullable: true })
     txHash: string
 
-    @Column({ nullable: true })
-    fileKey: string
+    @OneToMany(type => LegalDocument, legalDocument => legalDocument.loan, { nullable: true })
+    legalDocuments: LegalDocument[]
 }

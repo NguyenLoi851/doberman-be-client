@@ -1,11 +1,11 @@
-import { Body, Controller, Get, Param, Post, Put, Query, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Put, Query, Req, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Roles } from "src/decorators/roles.decorator";
 import { Role } from "src/enums/role.enum";
 import { ApplyNewLoanDTO, DeployLoanDTO, UpdateLoanDTO } from "../dtos/loan.dto";
 import { LoanService } from "../services/loan.service";
-import { FileInterceptor } from "@nestjs/platform-express";
+import { FileFieldsInterceptor, FileInterceptor, FilesInterceptor } from "@nestjs/platform-express";
 import { Express } from 'express';
 
 @ApiTags('Loans')
@@ -17,14 +17,14 @@ export class LoanController {
     @UseGuards(AuthGuard())
     @Post('apply')
     async applyNewLoan(@Req() req: any, @Body() applyNewLoanDTO: ApplyNewLoanDTO) {
-        return await this.loanService.applyNewLoan(req.user, applyNewLoanDTO, '');
+        return await this.loanService.applyNewLoan(req.user, applyNewLoanDTO, ['']);
     }
 
     @ApiBearerAuth()
     @UseGuards(AuthGuard())
     @Post('update/:id')
     async updateLoanById(@Req() req: any, @Param('id') id: number, @Body() updateLoanDTO: UpdateLoanDTO) {
-        return await this.loanService.updateLoanById(req.user, id, updateLoanDTO, '');
+        return await this.loanService.updateLoanById(req.user, id, updateLoanDTO, []);
     }
 
     @ApiBearerAuth()
@@ -86,21 +86,49 @@ export class LoanController {
 
     @ApiBearerAuth()
     @UseGuards(AuthGuard())
-    @UseInterceptors(FileInterceptor('file'))
+    @UseInterceptors(FilesInterceptor('files'))
     @Post('applyWithFile')
-    async applyNewLoanWithFile(@Req() req: any, @Body() applyNewLoanDTO: ApplyNewLoanDTO, @UploadedFile() file: Express.Multer.File) {
-        const fileKey = await this.loanService.uploadFile(file.buffer, file.originalname);
-        await this.loanService.applyNewLoan(req.user, applyNewLoanDTO, fileKey);
+    async applyNewLoanWithFile(@Req() req: any, @Body() applyNewLoanDTO: ApplyNewLoanDTO, @UploadedFiles() files: Array<Express.Multer.File>) {
+        if (files.length > 3) {
+            throw new HttpException('Must upload not more than 3 files', HttpStatus.BAD_REQUEST)
+        }
+        let fileKeys: string[] = []
+        const uploadFiles = files.map(async (file) => {
+            const fileKey = await this.loanService.uploadFile(file.buffer, file.originalname);
+            return fileKey
+        })
+        await Promise.all(uploadFiles).then((result) => {
+            fileKeys = result
+        })
+        await this.loanService.applyNewLoan(req.user, applyNewLoanDTO, fileKeys);
+    }
+
+    @UseInterceptors(FilesInterceptor('files'))
+    @Post('applyWithMultipleFiles')
+    async uploadMultipleFiles(@UploadedFiles() files: Array<Express.Multer.File>) {
+        console.log("files", files)
     }
 
     @ApiBearerAuth()
     @UseGuards(AuthGuard())
-    @UseInterceptors(FileInterceptor('file'))
+    @UseInterceptors(FilesInterceptor('files'))
     @Post('updateWithFile/:id')
-    async updateLoanWithFileById(@Req() req: any, @Param('id') id: number, @Body() updateLoanDTO: UpdateLoanDTO, @UploadedFile() file: Express.Multer.File) {
-        await this.loanService.deleteFileById(id)
-        const fileKey = await this.loanService.uploadFile(file.buffer, file.originalname);
-        return await this.loanService.updateLoanById(req.user, id, updateLoanDTO, fileKey);
+    async updateLoanWithFileById(@Req() req: any, @Param('id') id: number, @Body() updateLoanDTO: UpdateLoanDTO, @UploadedFiles() files?: Array<Express.Multer.File>) {
+
+        if (files.length > 3) {
+            throw new HttpException('Must upload not more than 3 files', HttpStatus.BAD_REQUEST)
+        }
+        let fileKeys: string[] = []
+        const uploadFiles = files.map(async (file) => {
+            const fileKey = await this.loanService.uploadFile(file.buffer, file.originalname);
+            return fileKey
+        })
+        await Promise.all(uploadFiles).then((result) => {
+            fileKeys = result
+        })
+
+        return await this.loanService.updateLoanById(req.user, id, updateLoanDTO, fileKeys);
+
     }
 
 }
