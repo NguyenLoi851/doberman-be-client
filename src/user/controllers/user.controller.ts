@@ -12,9 +12,16 @@ export class UsersController {
     constructor(private userService: UsersService) { }
 
     @Get('profile')
-    async getProfile(@Req() req: any){
+    async getProfile(@Req() req: any) {
         return {
             ...req.user
         }
     }
+
+    // @Get('/requestKyc')
+    // @ApiOperation({ summary: `Request kyc Sumsub` })
+    // async requestKycSumSub(@Req() req: any) {
+    //     const user = req.user;
+    //     return await this.userService.requestKycSumSub(user);
+    // }
 }

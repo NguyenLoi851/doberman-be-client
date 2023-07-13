@@ -11,10 +11,10 @@ import { KycService } from "../services/kyc.service";
 @ApiBearerAuth()
 @UseGuards(AuthGuard())
 export class KycController {
-    constructor(private kycService: KycService) {}
+    constructor(private kycService: KycService) { }
     @Roles(Role.Admin)
     @Post('signAllowMintUID')
-    async signAllowMintUID(@Req() req: any, @Body() signAllowMintUID: SignAllowMintUIDDTO){
+    async signAllowMintUID(@Req() req: any, @Body() signAllowMintUID: SignAllowMintUIDDTO) {
         return this.kycService.signAllowMintUID(signAllowMintUID)
     }
 
@@ -25,7 +25,7 @@ export class KycController {
     }
 
     @Get('info')
-    async getInfo(@Req() req: any){
+    async getInfo(@Req() req: any) {
         return this.kycService.getInfo(req.user.address);
     }
 
@@ -36,13 +36,26 @@ export class KycController {
 
     @Roles(Role.Admin)
     @Get('register-users')
-    async getRegisterUsers(){
+    async getRegisterUsers() {
         return await this.kycService.getRegisterUsers()
     }
 
     @Roles(Role.Admin)
     @Get('accepted-kyc-users')
-    async getAcceptedKYCUsers(){
+    async getAcceptedKYCUsers() {
         return await this.kycService.getAcceptedKYCUsers()
+    }
+
+
+    @Get('/requestKyc')
+    async requestKycSumSub(@Req() req: any) {
+        const user = req.user;
+        return await this.kycService.requestKycSumSub(user);
+    }
+
+    @Get('/getKycApplicantStatus')
+    async getKycApplicantStatus(@Req() req: any) {
+        const user = req.user;
+        return await this.kycService.getKycApplicantStatus(user);
     }
 }
