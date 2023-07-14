@@ -53,9 +53,9 @@ export class KycController {
         return await this.kycService.requestKycSumSub(user);
     }
 
-    @Get('/getKycApplicantStatus')
+    @Get('/getKycApplicantStatusByAddress')
     async getKycApplicantStatus(@Req() req: any) {
         const user = req.user;
-        return await this.kycService.getKycApplicantStatus(user);
+        return await this.kycService.getKycApplicantStatusByAddress(user.address);
     }
 }

@@ -73,9 +73,9 @@ export class KycService {
     }
 
     async getInfo(address: string) {
-        const userInfo = this.findByAddress(address);
-
-        return userInfo
+        const userInfo = await this.findByAddress(address);
+        const kycStatus = await this.getKycApplicantStatus(userInfo.kycId, userInfo.kycExternalUserId)
+        return { ...userInfo, kycStatus: kycStatus }
     }
 
     async requestMintUIDSignature(user: User) {
@@ -104,25 +104,28 @@ export class KycService {
 
     async requestKycSumSub(user: User) {
         let config: any = {};
-        const externalUserId = user.address.slice(2) + randomUUID().replace(/-/gi, '');
         try {
             const kycInfo = await this.getInfo(user.address)
-            if (!kycInfo.kycId) {
+            if (!kycInfo || !kycInfo.kycId) {
+                console.log("110")
+                const externalUserId = user.address.slice(2) + randomUUID().replace(/-/gi, '');
                 const res = await axios(this.createApplicant(config, externalUserId))
                 const kycId = res.data.id
+
+                const accessToken = await axios(this.createAccessToken(config, externalUserId));
                 await this.kycRepository.upsert(
                     [{ address: user.address.toLocaleLowerCase(), kycExternalUserId: externalUserId, kycId: kycId }],
                     ['address']
                 )
-                const accessToken = await axios(this.createAccessToken(config, externalUserId));
                 return accessToken.data
             } else {
-                const accessToken = await axios(this.createAccessToken(config, externalUserId));
+                console.log("121")
+                const accessToken = await axios(this.createAccessToken(config, kycInfo.kycExternalUserId));
                 return accessToken.data
             }
 
         } catch (error) {
-            console.log('error at request kyc', error.response.data);
+            console.log('error at request kyc', error);
             throw new HttpException('Server error', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -196,11 +199,23 @@ export class KycService {
         return config;
     }
 
-    async getKycApplicantStatus(user: User) {
+    async getKycApplicantStatusByAddress(address: string) {
         let config: any = {};
-        const kycInfo = await this.getInfo(user.address)
+        const kycInfo = await this.getInfo(address)
         const kycId = kycInfo.kycId
         const externalUserId = kycInfo.kycExternalUserId
+        try {
+            const res = await axios(this.getApplicantStatus(config, kycId, externalUserId))
+            const status = res.data.reviewStatus
+            return status
+        } catch (error) {
+            console.log('error at get kyc', error.response.data);
+            throw new HttpException('Server error', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async getKycApplicantStatus(kycId: string, externalUserId: string) {
+        let config: any = {};
         try {
             const res = await axios(this.getApplicantStatus(config, kycId, externalUserId))
             const status = res.data.reviewStatus
