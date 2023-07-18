@@ -103,11 +103,11 @@ export class LoanController {
         await this.loanService.applyNewLoan(req.user, applyNewLoanDTO, fileKeys);
     }
 
-    @UseInterceptors(FilesInterceptor('files'))
-    @Post('applyWithMultipleFiles')
-    async uploadMultipleFiles(@UploadedFiles() files: Array<Express.Multer.File>) {
-        console.log("files", files)
-    }
+    // @UseInterceptors(FilesInterceptor('files'))
+    // @Post('applyWithMultipleFiles')
+    // async uploadMultipleFiles(@UploadedFiles() files: Array<Express.Multer.File>) {
+    //     console.log("files", files)
+    // }
 
     @ApiBearerAuth()
     @UseGuards(AuthGuard())

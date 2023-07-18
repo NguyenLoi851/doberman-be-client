@@ -218,7 +218,6 @@ export class LoanService {
 
     async deleteFileById(loanId: number) {
         const loan = await this.getLoanById(loanId);
-        console.log("loan", loan);
         let oldFileKeys = []
         if (loan.legalDocuments && loan.legalDocuments.length > 0) {
             oldFileKeys = loan.legalDocuments.map(async (item: LegalDocument) => {

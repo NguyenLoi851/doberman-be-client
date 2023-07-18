@@ -74,6 +74,9 @@ export class KycService {
 
     async getInfo(address: string) {
         const userInfo = await this.findByAddress(address);
+        if (!userInfo || !userInfo.kycId || !userInfo.kycExternalUserId) {
+            return { ...userInfo }
+        }
         const kycStatus = await this.getKycApplicantStatus(userInfo.kycId, userInfo.kycExternalUserId)
         return { ...userInfo, kycStatus: kycStatus }
     }
@@ -107,7 +110,6 @@ export class KycService {
         try {
             const kycInfo = await this.getInfo(user.address)
             if (!kycInfo || !kycInfo.kycId) {
-                console.log("110")
                 const externalUserId = user.address.slice(2) + randomUUID().replace(/-/gi, '');
                 const res = await axios(this.createApplicant(config, externalUserId))
                 const kycId = res.data.id
@@ -119,7 +121,6 @@ export class KycService {
                 )
                 return accessToken.data
             } else {
-                console.log("121")
                 const accessToken = await axios(this.createAccessToken(config, kycInfo.kycExternalUserId));
                 return accessToken.data
             }
