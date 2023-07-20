@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Put, Query, Req, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Put, Query, Req, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Roles } from "src/decorators/roles.decorator";
@@ -29,7 +29,7 @@ export class LoanController {
 
     @ApiBearerAuth()
     @UseGuards(AuthGuard())
-    @Post('delete/:id')
+    @Delete('delete/:id')
     async deleteLoanById(@Req() req: any, @Param('id') id: number) {
         return await this.loanService.deleteLoanById(req.user, id);
     }
@@ -131,4 +131,16 @@ export class LoanController {
 
     }
 
+    // @Get('/sendTx/:applicantId')
+    // async sendTx(@Param('applicantId') applicantId: string) {
+    //     // const myHeader = this.loanService.createHeader({}, applicantId);
+    //     // console.log("my header", myHeader);
+    //     // return myHeader;
+    //     await this.loanService.sendTx(applicantId);
+    // }
+
+    // @Get('/getTx/:id')
+    // async getTx(@Param('id') id: string) {
+    //     await this.loanService.getTx(id);
+    // }
 }

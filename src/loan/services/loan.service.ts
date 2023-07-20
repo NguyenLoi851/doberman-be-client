@@ -8,6 +8,9 @@ import { v4 as uuid } from 'uuid';
 import { ConfigService } from "@nestjs/config";
 import { LegalDocumentRepository } from "../repositories/legalDocument.repository";
 import { LegalDocument } from "../entities/legalDocument.entity";
+import { createHmac } from "crypto";
+import axios from "axios";
+import FormData = require('form-data');
 
 @Injectable()
 export class LoanService {
@@ -245,4 +248,112 @@ export class LoanService {
 
         await s3Client.send(command)
     }
+
+    // createPayload(config: any, applicantId: string) {
+    //     config.method = 'post';
+    //     config.baseURL = this.configService.get('SUMSUB_BASE_URL');
+    //     config.url = `/resources/applicants/${applicantId}/kyt/txns/-/data`
+
+    //     let ts = Math.floor(Date.now() / 1000);
+    //     let signature = createHmac(
+    //         'sha256',
+    //         'eogYrds8sOD0sqDjeQ9AWlufObOcnxCn',
+    //     );
+    //     signature.update(ts + config.method.toUpperCase() + config.url);
+
+    //     const body = {
+    //         "sourceKey": "DemoCryptoTxn",
+    //         "applicant": {
+    //             "paymentMethod": {
+    //                 "type": "crypto"
+    //             },
+    //             "device": {
+    //                 "fingerprint": "51rokp6ub78",
+    //                 "ipInfo": {
+    //                     "ip": "87.141.63.130"
+    //                 }
+    //             }
+    //         },
+    //         "counterparty": {
+    //             "externalUserId": "2ytu04zg9h7p9wnc9r1zug",
+    //             "fullName": "Jack Posek",
+    //             "type": "individual",
+    //             "paymentMethod": {
+    //                 "type": "crypto",
+    //                 "fingerprint": "19jUgPvUdSLZyuJyaydcaTcbLYPgFuxoFb"
+    //             }
+    //         },
+    //         "info": {
+    //             "direction": "out",
+    //             "amount": 230,
+    //             "currencyCode": "USDT",
+    //             "fingerprint": "84bf83c10dfddc9d1f0ea6a1a1314638488fb161e819dae25fd8128c671d2d5a",
+    //             "paymentDetails": "Birthday Present",
+    //             "cryptoChain": "ETH"
+    //         },
+    //         "props": {
+    //             "customProperty": "Custom value that can be used in rules",
+    //             "dailyOutLimit": 10000
+    //         },
+    //         "txnId": "ppvav3gbuynpf4wg5cy1tr",
+    //         "txnDate": "2023-07-20 15:15:00+0700"
+    //     }
+
+    //     config.data = JSON.stringify(body);
+    //     if (config.data instanceof FormData) {
+    //         signature.update(config.data.getBuffer());
+    //     } else if (config.data) {
+    //         signature.update(config.data);
+    //     }
+
+    //     const headers = {
+    //         Accept: 'application/json',
+    //         'Content-Type': 'application/json',
+    //         'X-App-Token': 'sbx:AI99W4CjJC0dgPPsHsUMJ735.p0cBgsTQrb0eBhvypyDP2ZNoJ5lcHVVn',
+    //         'X-App-Access-Ts': ts.toString(),
+    //         'X-App-Access-Sig': signature.digest('hex'),
+    //     };
+
+    //     config.headers = headers;
+    //     return config
+    // }
+
+    // createPayloadWithoutBody(config: any, id: string) {
+    //     config.method = 'get';
+    //     config.baseURL = this.configService.get('SUMSUB_BASE_URL');
+    //     config.url = `/resources/kyt/txns/${id}/one`
+
+    //     let ts = Math.floor(Date.now() / 1000);
+    //     let signature = createHmac(
+    //         'sha256',
+    //         'eogYrds8sOD0sqDjeQ9AWlufObOcnxCn',
+    //     );
+    //     signature.update(ts + config.method.toUpperCase() + config.url);
+
+    //     const headers = {
+    //         Accept: 'application/json',
+    //         'Content-Type': 'application/json',
+    //         'X-App-Token': 'sbx:AI99W4CjJC0dgPPsHsUMJ735.p0cBgsTQrb0eBhvypyDP2ZNoJ5lcHVVn',
+    //         'X-App-Access-Ts': ts.toString(),
+    //         'X-App-Access-Sig': signature.digest('hex'),
+    //     };
+
+    //     config.headers = headers;
+    //     // config.data = null;
+    //     return config
+    // }
+
+    // async sendTx(applicantId: string) {
+    //     let config: any = {}
+    //     const kytRs = await axios(this.createPayload(config, applicantId))
+    //     console.log(kytRs.data.scoringResult)
+    //     return kytRs
+    // }
+
+    // async getTx(id: string) {
+    //     let config: any = {}
+    //     const kytRs = await axios(this.createPayloadWithoutBody(config, id))
+    //     console.log(kytRs)
+    //     return kytRs
+    // }
 }

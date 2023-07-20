@@ -9,6 +9,8 @@ export class LegalDocument {
     @Column({ nullable: true })
     fileKey: string
 
-    @ManyToOne(type => Loan, loan => loan.legalDocuments)
+    @ManyToOne(type => Loan, loan => loan.legalDocuments, {
+        onDelete: 'CASCADE'
+    })
     loan: Loan
 }
