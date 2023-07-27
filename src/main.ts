@@ -1,9 +1,17 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import * as fs from 'fs'
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const httpsOptions = {
+    key: fs.readFileSync(process.env.KEY_CA_PRIVATE_KEY_FILE_PATH),
+    cert: fs.readFileSync(process.env.KEY_CA_PUBLIC_CERTIFICATE_FILE_PATH),
+  };
+
+  const app = await NestFactory.create(AppModule, {
+    httpsOptions
+  });
 
   const config = new DocumentBuilder()
     .setTitle('Doberman swagger')
